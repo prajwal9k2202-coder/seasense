@@ -1,0 +1,2231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SeaSense</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<style>
+/* ----------------- Theme Variables ------------------ */
+:root {
+  --bg-primary: white;
+  --text-primary: black;
+  --bg-secondary: #f7f9fb;
+  --bg-tertiary: #f0f7ff;
+  --nav-bg: #003366;
+  --nav-text: white;
+  --border-color: #444;
+  --button-bg: #0077cc;
+  --button-hover: #005fa3;
+  --shadow-color: rgba(0,0,0,0.06);
+  --quiz-bg: rgba(0,0,0,0.05);
+}
+
+body.dark-mode {
+  --bg-primary: #1a1a1a;
+  --text-primary: #e0e0e0;
+  --bg-secondary: #2d2d2d;
+  --bg-tertiary: #1f3a52;
+  --nav-bg: #0d1b2a;
+  --nav-text: #e0e0e0;
+  --border-color: #555;
+  --button-bg: #0099ff;
+  --button-hover: #0077cc;
+  --shadow-color: rgba(0,0,0,0.3);
+  --quiz-bg: rgba(255,255,255,0.08);
+}
+
+/* ----------------- Global Styles ------------------ */
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  overflow-x: hidden;
+  transition: background-color 0.3s, color 0.3s;
+  touch-action: manipulation;
+}
+
+/* ----------------- Navigation Bar ------------------ */
+nav {
+  width: 100%;
+  background: var(--nav-bg);
+  position: fixed;
+  top: 0;
+  padding: 12px;
+  z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+}
+
+nav .nav-links {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+}
+
+nav a {
+  color: var(--nav-text);
+  text-decoration: none;
+  font-weight: bold;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+nav a:hover {
+  background: rgba(255,255,255,0.2);
+}
+
+#theme-toggle {
+  padding: 8px 12px;
+  border: none;
+  background: rgba(255,255,255,0.2);
+  color: var(--nav-text);
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+
+#theme-toggle:hover {
+  background: rgba(255,255,255,0.3);
+}
+
+/* ----------------- Sections ------------------ */
+section {
+  display: none;
+  padding: 100px 20px;
+  max-width: 900px;
+  margin: auto;
+}
+
+section.active {
+  display: block;
+}
+
+/* ----------------- Quiz Style ------------------ */
+.quiz-question {
+  background: var(--quiz-bg);
+  padding: 12px;
+  margin: 10px 0;
+  border-radius: 10px;
+}
+
+button {
+  padding: 10px 18px;
+  border: none;
+  background: var(--button-bg);
+  color: white;
+  border-radius: 8px;
+  font-size: 18px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+button:hover {
+  background: var(--button-hover);
+}
+
+input, textarea {
+  width: 90%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  margin-top: 10px;
+  transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+
+/* ----------------- Home Gallery & Fishing Gallery ------------------ */
+.home-gallery,
+.fishing-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+.home-gallery .item,
+.fishing-gallery .item {
+  background: var(--bg-secondary);
+  padding: 8px;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px var(--shadow-color);
+  text-align: center;
+}
+.home-gallery img,
+.fishing-gallery img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 8px;
+  display: block;
+}
+.home-gallery .caption,
+.fishing-gallery .caption,
+.climate-gallery .caption {
+  font-size: 14px;
+  margin-top: 8px;
+  color: var(--text-primary);
+}
+
+/* Climate Gallery */
+.climate-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin: 18px 0;
+}
+.climate-gallery .item {
+  background: var(--bg-tertiary);
+  padding: 8px;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px var(--shadow-color);
+  text-align: center;
+}
+.climate-gallery img {
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 8px;
+  display: block;
+}
+
+/* Image Modal Lightbox */
+.image-modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.8);
+  animation: fadeIn 0.3s;
+}
+
+.image-modal.active {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.image-modal-content {
+  position: relative;
+  max-width: 90%;
+  max-height: 90%;
+  background: var(--bg-primary);
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.image-modal img {
+  max-width: 100%;
+  max-height: 80vh;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.image-modal .close-btn {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 28px;
+  font-weight: bold;
+  color: var(--text-primary);
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.image-modal .close-btn:hover {
+  color: var(--button-hover);
+}
+
+/* Make all images clickable */
+img {
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+img:hover {
+  opacity: 0.8;
+}
+
+/* ============= ANIMATIONS & EFFECTS ============= */
+
+/* Fade-in animation for sections */
+@keyframes fadeInSection {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+section.active {
+  animation: fadeInSection 0.5s ease-in;
+}
+
+/* Floating animation for gallery items */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.home-gallery .item,
+.fishing-gallery .item,
+.climate-gallery .item {
+  animation: float 3s ease-in-out infinite;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.home-gallery .item:hover,
+.fishing-gallery .item:hover,
+.climate-gallery .item:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 16px var(--shadow-color);
+}
+
+/* Glow animation for images */
+@keyframes glowImage {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(0, 119, 204, 0);
+  }
+  50% {
+    box-shadow: 0 0 15px rgba(0, 119, 204, 0.3);
+  }
+}
+
+.home-gallery img:hover,
+.fishing-gallery img:hover,
+.climate-gallery img:hover {
+  animation: glowImage 1.5s ease-in-out infinite;
+}
+
+/* Slide-in animation for content */
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+section h1 {
+  animation: slideInLeft 0.6s ease-out;
+}
+
+section h2 {
+  animation: slideInRight 0.6s ease-out;
+}
+
+section p {
+  animation: fadeInSection 0.8s ease-out;
+}
+
+section ul {
+  animation: fadeInSection 0.9s ease-out;
+}
+
+/* Button animations */
+@keyframes buttonPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(0, 119, 204, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(0, 119, 204, 0);
+  }
+}
+
+button {
+  transition: all 0.3s ease;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 119, 204, 0.4);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+/* Navigation link animation */
+nav a {
+  position: relative;
+  overflow: hidden;
+}
+
+nav a::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.2);
+  transition: left 0.3s ease;
+  z-index: -1;
+}
+
+nav a:hover::before {
+  left: 100%;
+}
+
+/* Theme toggle animation */
+#theme-toggle {
+  animation: fadeInSection 0.5s ease;
+}
+
+/* Quiz animation */
+.quiz-question {
+  animation: slideInLeft 0.5s ease-out;
+  transition: all 0.3s ease;
+}
+
+.quiz-question:hover {
+  transform: translateX(5px);
+  box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+/* Table animation */
+table {
+  animation: slideInLeft 0.7s ease-out;
+}
+
+table tr {
+  transition: all 0.2s ease;
+}
+
+table tr:hover {
+  background: rgba(0, 119, 204, 0.1) !important;
+  transform: scale(1.01);
+}
+
+/* Input focus animation */
+input, textarea {
+  transition: all 0.3s ease;
+}
+
+input:focus, textarea:focus {
+  outline: none;
+  transform: scale(1.02);
+  box-shadow: 0 0 0 3px rgba(0, 119, 204, 0.2);
+  border-color: var(--button-bg);
+}
+
+/* List items stagger animation */
+@keyframes staggerIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+ul li {
+  animation: staggerIn 0.5s ease-out forwards;
+}
+
+ul li:nth-child(1) { animation-delay: 0s; }
+ul li:nth-child(2) { animation-delay: 0.1s; }
+ul li:nth-child(3) { animation-delay: 0.2s; }
+ul li:nth-child(4) { animation-delay: 0.3s; }
+ul li:nth-child(5) { animation-delay: 0.4s; }
+ul li:nth-child(n+6) { animation-delay: 0.5s; }
+
+/* Heading shimmer effect */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+section h1 {
+  background: linear-gradient(90deg, var(--text-primary) 0%, rgba(0,119,204,0.5) 50%, var(--text-primary) 100%);
+  background-size: 1000px 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+/* Gallery grid animation */
+@keyframes gridFlow {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.home-gallery,
+.fishing-gallery,
+.climate-gallery {
+  animation: gridFlow 0.8s ease-out;
+}
+
+/* Section popup overlay (appears when scrolling up) */
+.section-popup {
+  display: none;
+  position: fixed;
+  z-index: 1200;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(4px);
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+}
+
+.section-popup.active {
+  display: flex;
+}
+
+.section-popup .popup-card {
+  width: 95%;
+  max-width: 1000px;
+  max-height: 90vh;
+  overflow: auto;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border-radius: 12px;
+  padding: 18px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+}
+
+.section-popup .popup-close {
+  position: sticky;
+  top: 8px;
+  float: right;
+  background: none;
+  border: none;
+  font-size: 26px;
+  cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<!-- Image Modal Lightbox -->
+<div id="imageModal" class="image-modal">
+  <div class="image-modal-content">
+    <button class="close-btn" onclick="closeImageModal()">&times;</button>
+    <img id="modalImage" alt="Full size image">
+  </div>
+</div>
+
+<!-- Section Popup Overlay (shown on scroll-up) -->
+<div id="sectionPopup" class="section-popup" aria-hidden="true">
+  <div class="popup-card" id="popupCard">
+    <button class="popup-close" id="popupClose" aria-label="Close popup">&times;</button>
+    <div id="popupContent"></div>
+  </div>
+</div>
+
+<!-- Navigation -->
+<nav>
+  <div class="nav-links">
+    <a onclick="showPage('home')">Home</a>
+    <a onclick="showPage('climate')">Climate</a>
+    <a onclick="showPage('fishing')">Fishing</a>
+    <a onclick="showPage('foods')">Foods</a>
+    <a onclick="showPage('biodiversity')">Biodiversity</a>
+    <a onclick="showPage('currents')">Ocean Currents</a>
+    <a onclick="showPage('coral')">Coral Reefs</a>
+    <a onclick="showPage('pollution')">Pollution</a>
+    <a onclick="showPage('quiz')">Quiz</a>
+    <a onclick="showPage('contact')">Contact</a>
+    <a onclick="showPage('login')">Login</a>
+  </div>
+  <button id="theme-toggle" onclick="toggleTheme()">🌙 Dark</button>
+</nav>
+
+<!-- ----------------- Pages ------------------ -->
+
+<section id="home" class="active">
+  <h1 style="font-size: 35px; color: #6200aa;">Welcome to SeaSense</h1>
+  <p style="font-size: 25px;">
+    "A Digital Education Platform for coastal Sustainability." SeaSense is an interactive learning platform designed 
+    to help students, teachers, and ocean enthusiasts explore the wonders of the world’s coastlines.
+    With visually engaging content, quizzes, and real-life examples, SeaSense makes ocean learning meaningful.
+  </p>
+  <div class="home-gallery" aria-label="Coastal education images">
+    <div class="item">
+      <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=60" alt="Ocean waves at a coastline">
+      <div class="caption">Coastal waves & shoreline — habitat and processes</div>
+    </div>
+    <div class="item">
+      <img src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=800&q=60" alt="Rocky tide pool along coast">
+      <div class="caption">Tidepools — small ecosystems for learning</div>
+    </div>
+    <div class="item">
+      <img src="mm1.jpg" alt="Mangrove trees along a coast">
+      <div class="caption">Mangroves — protect coasts and support biodiversity</div>
+    </div>
+  </div>
+</section>
+
+<!-- Your full CLIMATE section is kept exactly the same as provided -->
+<section id="climate">
+  <h1 style="font-size: 35px;">Climate</h1>
+  <p style="font-size: 25px;">🌤 Coastal Climate</p>
+
+  <p>Coastal climate refers to the weather patterns and atmospheric conditions found in areas close to the ocean or sea. These regions have unique climate features because of the constant interaction between land, water, and air. Coastal climates are generally mild, humid, and influenced by ocean currents, winds, and temperature changes.<
+  <div class="climate-gallery" aria-label="Coastal climate features">
+    <div class="item">
+      <img src="clmt 1.webp" alt="Coastal beach landscape">
+      <div class="caption">Coastal landscapes shaped by climate</div>
+    </div>
+    <div class="item">
+      <img src="clmt2.jpg" alt="Rainy coastal weather">
+      <div class="caption">High humidity & rainfall patterns</div>
+    </div>
+    <div class="item">
+      <img src="clmt3.jpg" alt="Stormy coastal weather">
+      <div class="caption">Cyclones & storm surges</div>
+    </div>
+  </div>
+
+  <h2 style="font-size: 28px; margin-top: 20px;">🌡 1. Characteristics of Coastal Climate</h2>
+
+  <p style="font-size: 18px;"><b>a) Moderate Temperatures</b></p>
+  <ul>
+    <li>Coastal areas rarely experience extreme heat or cold</li>
+    <li>Water heats and cools slowly, which keeps temperatures stable</li>
+  </ul>
+
+  <p style="font-size: 18px;"><b>b) High Humidity</b></p>
+  <ul>
+    <li>Coastal air contains a lot of moisture due to evaporation from the sea</li>
+    <li>This can make the atmosphere feel warm and sticky</li>
+  </ul>
+
+  <p style="font-size: 18px;"><b>c) Frequent Rainfall</b></p>
+  <ul>
+    <li>Moist sea air rises and condenses, causing regular rainfall, especially during monsoons</li>
+  </ul>
+
+  <p style="font-size: 18px;"><b>d) Strong Winds</b></p>
+  <ul>
+    <li>Sea breezes and land breezes create constant airflow, keeping the region windy</li>
+  </ul>
+
+  <h2 style="font-size: 28px; margin-top: 20px;">🌊 2. Factors Affecting Coastal Climate</h2>
+
+  <div class="climate-gallery" aria-label="Factors affecting coastal climate">
+    <div class="item">
+      <img src="aff1.png" alt="Ocean currents">
+      <div class="caption">Ocean currents affect temperature</div>
+    </div>
+    <div class="item">
+      <img src="aff2.jpeg" alt="Wind patterns">
+      <div class="caption">Wind direction & sea breezes</div>
+    </div>
+    <div class="item">
+      <img src="aff3.jpg" alt="Tropical coastal landscape">
+      <div class="caption">Latitude affects climate type</div>
+    </div>
+  </div>
+
+  <p style="font-size: 18px;"><b>a) Ocean Currents</b></p>
+  <ul>
+    <li>Warm currents (like Gulf Stream) raise temperature, while cold currents cool the coast</li>
+    <li>They influence rainfall, storm patterns, and humidity</li>
+  </ul>
+
+  <p style="font-size: 18px;"><b>b) Distance from the Sea</b></p>
+  <ul>
+    <li>Areas closer to the coast have more humidity and stable temperatures</li>
+  </ul>
+
+  <p style="font-size: 18px;"><b>c) Wind Direction</b></p>
+  <ul>
+    <li>Winds blowing from the ocean bring moisture; winds from land are usually dry</li>
+  </ul>
+
+  <p style="font-size: 18px;"><b>d) Latitude (Location on Earth)</b></p>
+  <ul>
+    <li>Coasts near the equator are hot and wet, while those near the poles are cold and dry</li>
+  </ul>
+
+  <h2 style="font-size: 28px; margin-top: 20px;">🌬 3. Sea Breeze and Land Breeze</h2>
+
+  <div class="climate-gallery" aria-label="Sea and land breezes">
+    <div class="item">
+      <img src="01.png" alt="Daytime sea breeze">
+      <div class="caption">Sea breeze (Daytime) — cooler winds</div>
+    </div>
+    <div class="item">
+      <img src="02.jpg" alt="Nighttime land breeze">
+      <div class="caption">Land breeze (Nighttime) — comfortable</div>
+    </div>
+  </div>
+
+  <p style="font-size: 18px;"><b>Sea Breeze (Daytime)</b></p>
+  <ul>
+    <li>Land heats quickly, air rises</li>
+    <li>Cool ocean air moves to land</li>
+    <li>Creates cool and refreshing winds</li>
+  </ul>
+
+  <p style="font-size: 18px;"><b>Land Breeze (Nighttime)</b></p>
+  <ul>
+    <li>Land cools faster than water</li>
+    <li>Cool air from land moves toward sea</li>
+    <li>Makes nights breezy and comfortable</li>
+  </ul>
+
+  <h2 style="font-size: 28px; margin-top: 20px;">🌧 4. Coastal Climate Types</h2>
+
+  <div class="climate-gallery" aria-label="Coastal climate types worldwide">
+    <div class="item">
+      <img src="https://images.pexels.com/photos/1619317/pexels-photo-1619317.jpeg" alt="Tropical coastline">
+      <div class="caption">Tropical — hot & humid</div>
+    </div>
+    <div class="item">
+      <img src="w1.jpeg" alt="Temperate coastline">
+      <div class="caption">Temperate — mild seasons</div>
+    </div>
+    <div class="item">
+      <img src="w2.jpeg" alt="Cold polar coastline">
+      <div class="caption">Cold polar — icy conditions</div>
+    </div>
+  </div>
+
+  <p style="font-size: 18px;"><b>a) Tropical Coastal Climate</b></p>
+  <ul>
+    <li>Hot and humid</li>
+    <li>Heavy rainfall</li>
+    <li>Found in India, Southeast Asia, Caribbean</li>
+  </ul>
+
+  <p style="font-size: 18px;"><b>b) Temperate Coastal Climate</b></p>
+  <ul>
+    <li>Mild summers and winters</li>
+    <li>Moderate rainfall</li>
+    <li>Found in Europe, USA, Australia</li>
+  </ul>
+
+  <p style="font-size: 18px;"><b>c) Cold Coastal Climate</b></p>
+  <ul>
+    <li>Low temperatures</li>
+    <li>Snowfall possible</li>
+    <li>Found near Arctic and Antarctic coasts</li>
+  </ul>
+
+  <h2 style="font-size: 28px; margin-top: 20px;">🌀 5. Weather Events Common in Coastal Areas</h2>
+
+  <p style="font-size: 18px;"><b>a) Cyclones & Hurricanes</b></p>
+  <ul>
+    <li>Form over warm oceans; bring strong winds and heavy rainfall</li>
+  </ul>
+
+  <p style="font-size: 18px;"><b>b) Storm Surges</b></p>
+  <ul>
+    <li>Sea levels rise during storms, causing coastal flooding</li>
+  </ul>
+
+  <p style="font-size: 18px;"><b>c) Tsunamis (Rare)</b></p>
+  <ul>
+    <li>Caused by underwater earthquakes or volcanic eruptions</li>
+  </ul>
+
+  <h2 style="font-size: 28px; margin-top: 20px;">6. Impact of Coastal Climate on Life</h2>
+
+  <p style="font-size: 18px;"><b>a) Vegetation</b></p>
+  <ul>
+    <li>Mangroves, palm trees and salt-tolerant plants grow well</li>
+  </ul>
+
+  <p style="font-size: 18px;"><b>b) Animals</b></p>
+  <ul>
+    <li>Marine species like turtles, seabirds, crabs, dolphins thrive here</li>
+  </ul>
+
+  <p style="font-size: 18px;"><b>c) Human Life</b></p>
+  <ul>
+    <li>Fishing, tourism, agriculture, and trade depend heavily on coastal climate conditions</li>
+  </ul>
+
+  <h2 style="font-size: 28px; margin-top: 20px;">🌍 7. Importance of Understanding Coastal Climate</h2>
+
+  <p style="font-size: 18px;"><b>1. Helps in Disaster Preparedness</b></p>
+  <ul>
+    <li>Coastal regions are prone to cyclones, tsunamis, floods, and storm surges</li>
+    <li>Understanding coastal climate allows governments and communities to:
+      <ul style="margin-top: 8px;">
+        <li>Predict weather changes</li>
+        <li>Issue early warnings</li>
+        <li>Reduce loss of life and property</li>
+      </ul>
+    </li>
+  </ul>
+
+  <p style="font-size: 18px;"><b>2. Supports Sustainable Fishing and Marine Life Protection</b></p>
+  <ul>
+    <li>The coastal climate affects ocean currents, water temperature, and marine biodiversity</li>
+    <li>Knowing these patterns helps:
+      <ul style="margin-top: 8px;">
+        <li>Protect marine species</li>
+        <li>Maintain fish populations</li>
+        <li>Support local fishermen</li>
+      </ul>
+    </li>
+  </ul>
+
+  <p style="font-size: 18px;"><b>3. Guides Coastal Agriculture</b></p>
+  <ul>
+    <li>Humidity, rainfall, and soil conditions near the coast influence which crops grow best</li>
+    <li>Understanding the climate helps farmers:
+      <ul style="margin-top: 8px;">
+        <li>Choose suitable crops (like coconut, rice, cashew)</li>
+        <li>Plan farming seasons</li>
+        <li>Avoid crop loss due to storms or saltwater intrusion</li>
+      </ul>
+    </li>
+  </ul>
+
+  <p style="font-size: 18px;"><b>4. Crucial for Urban Planning & Infrastructure</b></p>
+  <ul>
+    <li>Buildings near the coast need protection against high winds, salt corrosion, and flooding</li>
+    <li>Knowledge of the climate helps engineers design stronger, safer structures</li>
+  </ul>
+
+  <p style="font-size: 18px;"><b>5. Important for Tourism Management</b></p>
+  <ul>
+    <li>Tourism depends heavily on weather conditions</li>
+    <li>Understanding coastal climate helps:
+      <ul style="margin-top: 8px;">
+        <li>Plan tourist seasons</li>
+        <li>Ensure safety during rough weather</li>
+        <li>Protect beaches and natural habitats from overuse</li>
+      </ul>
+    </li>
+  </ul>
+
+  <p style="font-size: 18px;"><b>6. Supports Environmental Conservation</b></p>
+  <ul>
+    <li>Coastal areas contain fragile ecosystems like mangroves, coral reefs, and estuaries</li>
+    <li>Knowing climate patterns helps in:
+      <ul style="margin-top: 8px;">
+        <li>Conserving these ecosystems</li>
+        <li>Preventing erosion and habitat loss</li>
+        <li>Maintaining ecological balance</li>
+      </ul>
+    </li>
+  </ul>
+
+  <p style="font-size: 18px;"><b>7. Improves Transportation & Navigation</b></p>
+  <ul>
+    <li>Climate affects shipping routes, fishing activities, and port operations</li>
+    <li>Accurate climate knowledge ensures safe marine transportation</li>
+  </ul>
+
+  <p style="font-size: 18px;"><b>8. Helps Manage Coastal Erosion</b></p>
+  <ul>
+    <li>Coastal erosion is a major issue caused by waves, sea-level rise, and storms</li>
+    <li>Understanding climate helps predict erosion patterns and plan:
+      <ul style="margin-top: 8px;">
+        <li>Sea walls</li>
+        <li>Breakwaters</li>
+        <li>Mangrove planting</li>
+        <li>Beach nourishment</li>
+      </ul>
+    </li>
+  </ul>
+
+  <p style="font-size: 18px;"><b>9. Supports Public Health and Safety</b></p>
+  <ul>
+    <li>Humidity, salt content, and temperature variations affect human health</li>
+    <li>Understanding coastal climate helps:
+      <ul style="margin-top: 8px;">
+        <li>Identify health risks</li>
+        <li>Plan healthcare services</li>
+        <li>Improve living conditions</li>
+      </ul>
+    </li>
+  </ul>
+
+  <h2 style="font-size: 28px; margin-top: 20px;">🌊 8. Effects of Coastal Climate</h2>
+
+  <p>Coastal climate has several important effects on the environment, living organisms, and human activities. Because coastal regions are influenced by the sea, the climate creates unique challenges and benefits.</p>
+<br>
+<br>
+🌧️ *. More Rainfall<br>
+
+Warm sea water increases evaporation, which leads to frequent and heavy rainfall.<br>
+
+Effect:<br>
+
+Supports agriculture<br>
+
+Increases chances of floods during monsoon<br>
+
+Dense vegetation grows easily<br>
+<br>
+<br>
+🌬️ *. Strong Coastal Winds<br>
+
+Sea breeze (day) and land breeze (night) constantly affect coastal areas.
+<br>
+Effect:<br>
+
+Cooler daytime temperatures<br>
+
+Helpful for wind energy production<br>
+
+Can sometimes cause damage during storms or cyclones<br>
+<br>
+🌀 *. Cyclones & Storm Surges<br>
+
+Coasts are prone to cyclones, tsunamis, and storm surges.<br>
+
+Effect:
+<br>
+Loss of property and life<br>
+
+Coastal flooding<br>
+
+Damage to infrastructure, fishing boats, houses
+<br>
+<br>
+🌱 *. Impact on Agriculture<br>
+
+Salt in air and soil affects the type of crops that can grow.<br>
+
+Effect:
+<br>
+Limited crop variety
+<br>
+Coconut, paddy, cashew, and banana grow better
+<br>
+Soil erosion due to winds and tides
+<br>
+<br>
+🐠 *. Rich Biodiversity
+<br>
+Coastal climate supports diverse marine ecosystems like coral reefs, mangroves, and fish species.
+<br>
+Effect:
+<br>
+Boosts fishing industry
+<br>
+Supports tourism
+<br>
+Provides habitat for many marine animals
+<br>
+<br>
+🏖️ *. Tourism Impacts<br>
+<
+Coasts attract tourists due to pleasant climate and beaches.<br>
+
+Effect:
+<br>
+Boosts local economy
+<br>
+Creates jobs
+<br>
+Over-tourism can harm the environment
+<br>
+<br>
+🧍 *. Human Health Impacts<br>
+
+Humidity and salt exposure affect people living near the coast.<br>
+
+Effect:<br>
+
+Higher risk of skin infections<br>
+
+Respiratory issues for some
+<br>
+Overall healthier air due to less pollution
+<br>
+<br>
+🏚️ *. Erosion & Land Loss<br>
+
+Waves constantly hit the shoreline causing coastal erosion.<br>
+
+Effect:<br>
+
+Loss of land<br>
+
+Damage to houses near the shore<br>
+
+Need for building sea walls and breakwaters<br>
+<br>
+<br>
+---
+
+<p style="font-size: 25px;">🌱 9. Effects on the Environment:<br></p>
+<br>
+a) Growth of Special Vegetation:<br>
+
+Coastal climates support mangroves, salt-tolerant plants, coconut trees, and coastal shrubs.
+These plants help prevent soil erosion and protect the shoreline.<br>
+<br>
+b) Increased Soil Salinity:<br>
+
+Saltwater carried by winds or floods makes coastal soil salty.
+This can reduce agricultural productivity.<br>
+<br>
+c) Coastal Erosion:<br>
+
+Strong waves, tides, and winds slowly wear away the coastline.
+Beaches become smaller and habitats get destroyed.<br>
+<br>
+d) Formation of Wetlands:<br>
+
+Constant moisture creates swamps, lagoons, and estuaries that support rich biodiversity.<br>
+<br>
+<br>
+---
+
+<p style="font-size: 25px;">🐠 10. Effects on Marine and Land Life:<br></p>
+<br>
+a) Rich Biodiversity:<br>
+
+Coastal climate supports fish, corals, crabs, turtles, seabirds, and marine mammals.
+Warmer waters and nutrient flow help life flourish.<br>
+<br>
+b) Migration Patterns:<br>
+
+Many species (fish, birds, whales) migrate depending on seasonal coastal winds and water temperature.<br>
+<br>
+c) Coral Bleaching:<br>
+
+Warmer coastal temperatures can harm coral reefs, causing bleaching and loss of marine life.<br>
+<br>
+d) Breeding and Nesting:<br>
+
+Sandy beaches provide nesting grounds for turtles and birds, influenced by climate and tides.<br>
+<br>
+<br>
+---
+
+<p style="font-size: 25px;">🏘 11. Effects on Human Settlements:<br></p>
+<br>
+a) Flooding and Storm Damage:<br>
+
+Cyclones, storm surges, and heavy rains can damage homes, buildings, and crops.<br>
+<br>
+b) Ideal for Tourism:<br>
+
+Moderate temperatures and beautiful beaches attract tourists year-round, boosting local economy.<br>
+<br>
+c) Fishing Industry:<br>
+
+Fishing greatly depends on weather patterns, ocean currents, and water temperature.
+Bad weather reduces fish catch and affects livelihoods.<br>
+<br>
+d) Rising Sea Levels:<br>
+
+Climate change causes sea water to expand, leading to coastal flooding and land loss.<br>
+<br>
+<p style="font-size: 25px;">🌡 12. Effects on Weather and Atmosphere:<br></p>
+<br>
+a) High Humidity:<br>
+
+Moist air makes the region feel warmer and sticky, affecting comfort and health.<br>
+<br>
+b) Frequent Rainfall:<br>
+
+Regular rainfall keeps the region green but can cause waterlogging and erosion.<br>
+<br>
+c) Temperature Moderation:<br>
+<br>
+
+
+Coastal regions rarely face extreme heat or cold, providing a stable living environment.<br>
+<br>
+<br>
+---
+
+<p style="font-size: 25px;">🏞 13. Effects on Economy and Society: <br></p>
+<br>
+a) Coastal Agriculture:<br>
+
+Crops like rice, coconut, and cashew grow well.
+However, saltwater intrusion can damage fields.<br>
+<br>
+b) Ports and Trade:<br>
+Stable climate and deep waters make coasts perfect for ports.
+Coastal climate helps global shipping and trade.<br>
+<br>
+
+c) Health Impacts:<br>
+
+High humidity can cause breathing issues, fungal infections, and dehydration.<br>
+<br>
+<br>
+---
+
+<p style="font-size: 25px;"> 🧭 14. Long-Term Effects (Climate Change Related)<br></p>
+<br>
+
+a) Melting Glaciers → Sea Level Rise<br>
+<br>
+Leads to submerging of low-lying areas.<br>
+
+b) Stronger and More Frequent Storms<br>
+<br>
+
+Climate change is increasing the intensity of cyclones.<br>
+<br>
+
+c) Loss of Coastal Biodiversity<br>
+<br>
+
+Rising temperatures affect fish, coral reefs, and marine ecosystems.</p><br>
+<br></p>
+</section>
+
+<section id="fishing">
+  <h1 style="font-size: 35px;">Fishing & Sustainable Practices</h1>
+  
+  <p style="font-size: 25px;">🎣 Overview of Fishing</p>
+  <p>Fishing is one of the most important economic and food sources for over 3 billion people worldwide. However, unsustainable practices threaten marine ecosystems and biodiversity. Understanding sustainable fishing is critical for ocean conservation.</p>
+
+  <div class="fishing-gallery" aria-label="Fishing and marine conservation images">
+    <div class="item">
+      <img src="https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&w=800&q=60" alt="Traditional fishing boats at sea">
+      <div class="caption">Traditional fishing methods — cultural heritage</div>
+    </div>
+    <div class="item">
+      <img src="cv1.jpg" alt="Fishing nets and marine catch">
+      <div class="caption">Commercial fishing nets — balance efficiency with responsibility</div>
+    </div>
+    <div class="item">
+      <img src="cv2.jpeg" alt="Fish market display">
+      <div class="caption">Fresh fish markets — connecting ocean to communities</div>
+    </div>
+  </div>
+
+  <h2 style="font-size: 28px; margin-top: 20px;">🌊 1. Types of Fishing</h2>
+  
+  <p style="font-size: 18px;"><b>Commercial Fishing</b></p>
+  <p>Large-scale operations using advanced equipment to catch fish for profit. Methods include:</p>
+  <ul>
+    <li><b>Trawling:</b> Dragging large nets along the ocean floor (can damage ecosystems)</li>
+    <li><b>Purse Seining:</b> Surrounding schools of fish with large nets</li>
+    <li><b>Longlining:</b> Using long lines with hundreds of hooks</li>
+    <li><b>Dredging:</b> Mechanical harvesting of seafloor organisms</li>
+  </ul>
+
+  <p style="font-size: 18px;"><b>Artisanal Fishing</b></p>
+  <p>Small-scale, traditional fishing by local communities using sustainable methods. Benefits:</p>
+  <ul>
+    <li>Minimal environmental impact</li>
+    <li>Supports local livelihoods and food security</li>
+    <li>Preserves cultural practices</li>
+    <li>Better quality of life for fishing communities</li>
+  </ul>
+
+  <p style="font-size: 18px;"><b>Recreational Fishing</b></p>
+  <p>Fishing for sport and leisure. Can help raise awareness but must follow regulations to prevent overfishing.</p>
+
+  <h2 style="font-size: 28px; margin-top: 20px;">⚠️ 2. The Problem: Overfishing</h2>
+  
+  <p><b>What is Overfishing?</b></p>
+  <p>Removing fish from the ocean faster than they can reproduce, leading to population collapse and ecosystem damage.</p>
+
+  <p style="font-size: 18px;"><b>Statistics:</b></p>
+  <ul>
+    <li>Over 30% of global fish stocks are overfished</li>
+    <li>90% of large predatory fish have been removed from oceans</li>
+    <li>Bottom trawling destroys deep-sea habitats</li>
+    <li>Bycatch (unwanted catch) kills millions of marine species annually</li>
+  </ul>
+
+  <p style="font-size: 18px;"><b>Consequences of Overfishing:</b></p>
+  <ul>
+    <li><b>Species Extinction:</b> Cod, tuna, and shark populations are critically depleted</li>
+    <li><b>Food Insecurity:</b> Fishing communities lose livelihoods and food sources</li>
+    <li><b>Ecosystem Collapse:</b> Loss of key species disrupts food chains</li>
+    <li><b>Economic Loss:</b> Global fishing industry worth $150+ billion faces collapse</li>
+    <li><b>Biodiversity Loss:</b> Endangered species like sea turtles and dolphins caught as bycatch</li>
+  </ul>
+
+  <h2 style="font-size: 28px; margin-top: 20px;">✅ 3. Sustainable Fishing Practices</h2>
+  
+  <p style="font-size: 18px;"><b>Catch Limits & Quotas</b></p>
+  <p>Governments set limits on how much fish can be caught to allow populations to recover.</p>
+
+  <p style="font-size: 18px;"><b>Selective Fishing Methods</b></p>
+  <ul>
+    <li><b>Hook-and-Line:</b> Targets specific species, reduces bycatch</li>
+    <li><b>Pole-and-Line:</b> Traditional method, very selective</li>
+    <li><b>Fish Traps:</b> Allow small fish to escape</li>
+  </ul>
+
+  <p style="font-size: 18px;"><b>Marine Protected Areas (MPAs)</b></p>
+  <p>Designated zones where fishing is restricted or banned, allowing marine life to recover and breed.</p>
+
+  <p style="font-size: 18px;"><b>Aquaculture (Fish Farming)</b></p>
+  <p>Breeding fish in controlled environments reduces pressure on wild populations, though it has environmental challenges.</p>
+
+  <p style="font-size: 18px;"><b>Eco-Labeling & Certification</b></p>
+  <p><b>MSC (Marine Stewardship Council)</b> certification ensures fish comes from sustainable sources. Look for the label when buying!</p>
+
+  <h2 style="font-size: 28px; margin-top: 20px;">🐟 4. Important Fish Species & Their Status</h2>
+  
+  <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+    <tr style="background: #e0e7ff;">
+      <th style="border: 1px solid #999; padding: 8px;"><b>Species</b></th>
+      <th style="border: 1px solid #999; padding: 8px;"><b>Status</b></th>
+      <th style="border: 1px solid #999; padding: 8px;"><b>Action Needed</b></th>
+    </tr>
+    <tr>
+      <td style="border: 1px solid #999; padding: 8px;">Atlantic Cod</td>
+      <td style="border: 1px solid #999; padding: 8px;">🔴 Critically Depleted</td>
+      <td style="border: 1px solid #999; padding: 8px;">Fishing moratorium in some areas</td>
+    </tr>
+    <tr>
+      <td style="border: 1px solid #999; padding: 8px;">Bluefin Tuna</td>
+      <td style="border: 1px solid #999; padding: 8px;">🟡 Vulnerable</td>
+      <td style="border: 1px solid #999; padding: 8px;">Strict catch limits</td>
+    </tr>
+    <tr>
+      <td style="border: 1px solid #999; padding: 8px;">Sharks</td>
+      <td style="border: 1px solid #999; padding: 8px;">🔴 Threatened</td>
+      <td style="border: 1px solid #999; padding: 8px;">Ban on shark finning</td>
+    </tr>
+    <tr>
+      <td style="border: 1px solid #999; padding: 8px;">Salmon</td>
+      <td style="border: 1px solid #999; padding: 8px;">🟡 Declining</td>
+      <td style="border: 1px solid #999; padding: 8px;">Habitat restoration, dam removal</td>
+    </tr>
+  </table>
+
+  <h2 style="font-size: 28px; margin-top: 20px;">🌍 5. Global Fishing Industry</h2>
+  
+  <p><b>Major Fishing Nations:</b> China, Vietnam, Peru, Indonesia, Japan, and India lead in seafood production.</p>
+  
+  <p><b>Employment:</b> Over 60 million people work in fishing industries globally, many in developing nations.</p>
+  
+  <p><b>Trade:</b> Seafood is one of the most traded commodities worldwide, worth over $150 billion annually.</p>
+
+  <h2 style="font-size: 28px; margin-top: 20px;">💡 6. How You Can Help</h2>
+  
+  <ul>
+    <li>✅ Buy MSC-certified fish and seafood</li>
+    <li>✅ Reduce seafood consumption, especially endangered species</li>
+    <li>✅ Support artisanal and local fishing communities</li>
+    <li>✅ Avoid fish species like bluefin tuna, shark, and Atlantic cod when depleted</li>
+    <li>✅ Support marine conservation organizations</li>
+    <li>✅ Advocate for stronger fishing regulations and MPAs</li>
+    <li>✅ Choose sustainable aquaculture products when possible</li>
+  </ul>
+
+  <h2 style="font-size: 28px; margin-top: 20px;">🐠 9. Rare & Exotic Fish Species</h2>
+  
+  <p>The ocean is home to thousands of rare and exotic fish species that are rarely seen by humans. From the depths to remote coral reefs, these creatures display unique adaptations and stunning colors. Many are critically endangered.</p>
+
+  <h3 style="font-size: 22px; margin-top: 15px;">🌟 Deep-Sea Rare Fish</h3>
+  
+  <p style="font-size: 18px;"><b>🎣 Anglerfish (Melanocetus johnsonii)</b></p>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 10px 0; background: rgba(0,0,0,0.02); padding: 12px; border-radius: 8px;">
+    <div>
+      <img src="images.jpeg" alt="Anglerfish" style="width: 100%; height: 250px; object-fit: cover; border-radius: 8px;">
+    </div>
+    <div>
+      <ul style="margin: 0;">
+        <li><b>Depth:</b> 6,500+ feet below surface</li>
+        <li><b>Feature:</b> Bioluminescent lure on head to attract prey</li>
+        <li><b>Color:</b> Black body with glowing appendages</li>
+        <li><b>Diet:</b> Carnivorous — eats larger fish than itself</li>
+        <li><b>Status:</b> Rare but not endangered</li>
+      </ul>
+    </div>
+  </div>
+
+  <p style="font-size: 18px;"><b>🦑 Barreleye Fish (Macropinna microstoma)</b></p>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 10px 0; background: rgba(0,0,0,0.02); padding: 12px; border-radius: 8px;">
+    <div>
+      <img src="images (b).jpeg" alt="Barreleye Fish" style="width: 100%; height: 250px; object-fit: cover; border-radius: 8px;">
+    </div>
+    <div>
+      <ul style="margin: 0;">
+        <li><b>Depth:</b> 2,000-3,000 feet</li>
+        <li><b>Feature:</b> Transparent head with tubular eyes</li>
+        <li><b>Unique Trait:</b> Eyes rotate upward to spot prey above</li>
+        <li><b>Size:</b> Only 6 inches long</li>
+        <li><b>Discovery:</b> First filmed in 2004 by MBARI</li>
+      </ul>
+    </div>
+  </div>
+
+  <p style="font-size: 18px;"><b>💎 Dumbo Octopus (Grimpoteuthis)</b></p>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 10px 0; background: rgba(0,0,0,0.02); padding: 12px; border-radius: 8px;">
+    <div>
+      <img src="images (o).jpeg" alt="Dumbo Octopus" style="width: 100%; height: 250px; object-fit: cover; border-radius: 8px;">
+    </div>
+    <div>
+      <ul style="margin: 0;">
+        <li><b>Depth:</b> 9,800+ feet (deepest octopus species)</li>
+        <li><b>Feature:</b> Ear-like fins resembling Disney's Dumbo</li>
+        <li><b>Body:</b> Soft, jellyfish-like appearance</li>
+        <li><b>Diet:</b> Sea cucumbers and marine snow</li>
+        <li><b>Adaptations:</b> Extremely slow metabolism for deep ocean</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 style="font-size: 22px; margin-top: 15px;">🌈 Colorful & Exotic Fish</h3>
+  
+  <p style="font-size: 18px;"><b>🌺 Mandarin Fish (Synchiropus splendidus)</b></p>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 10px 0; background: rgba(0,0,0,0.02); padding: 12px; border-radius: 8px;">
+    <div>
+      <img src="images (m).jpeg" alt="Mandarin Fish" style="width: 100%; height: 250px; object-fit: cover; border-radius: 8px;">
+    </div>
+    <div>
+      <ul style="margin: 0;">
+        <li><b>Location:</b> Indonesian coral reefs</li>
+        <li><b>Colors:</b> Brilliant blue, orange, yellow & red patterns</li>
+        <li><b>Size:</b> 3-4 inches — smallest fish</li>
+        <li><b>Rarity:</b> Hard to breed in captivity</li>
+        <li><b>Conservation:</b> Wild populations declining due to collection</li>
+      </ul>
+    </div>
+  </div>
+
+  <p style="font-size: 18px;"><b>⭐ Lionfish (Pterois)</b></p>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 10px 0; background: rgba(0,0,0,0.02); padding: 12px; border-radius: 8px;">
+    <div>
+      <img src="lion.webp" alt="Lionfish" style="width: 100%; height: 250px; object-fit: cover; border-radius: 8px;">
+    </div>
+    <div>
+      <ul style="margin: 0;">
+        <li><b>Location:</b> Indo-Pacific & Atlantic coral reefs</li>
+        <li><b>Appearance:</b> Fan-like pectoral fins with striped patterns</li>
+        <li><b>Venom:</b> Venomous spines for defense</li>
+        <li><b>Danger:</b> Invasive species in Atlantic (threatens ecosystems)</li>
+        <li><b>Hunting:</b> Uses fins to herd prey into corner</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 style="font-size: 22px; margin-top: 15px;">⚠️ Critically Endangered Fish</h3>
+  
+  <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+    <tr style="background: #e0e7ff;">
+      <th style="border: 1px solid #999; padding: 8px;"><b>Species</b></th>
+      <th style="border: 1px solid #999; padding: 8px;"><b>Status</b></th>
+      <th style="border: 1px solid #999; padding: 8px;"><b>Threat</b></th>
+    </tr>
+    <tr>
+      <td style="border: 1px solid #999; padding: 8px;"><b>Smalltooth Sawfish</b></td>
+      <td style="border: 1px solid #999; padding: 8px;">🔴 Critically Endangered</td>
+      <td style="border: 1px solid #999; padding: 8px;">Overfishing, net entanglement</td>
+    </tr>
+    <tr>
+      <td style="border: 1px solid #999; padding: 8px;"><b>European Eel</b></td>
+      <td style="border: 1px solid #999; padding: 8px;">🔴 Critically Endangered</td>
+      <td style="border: 1px solid #999; padding: 8px;">Dam construction, pollution</td>
+    </tr>
+    <tr>
+      <td style="border: 1px solid #999; padding: 8px;"><b>Tequila Splitfin</b></td>
+      <td style="border: 1px solid #999; padding: 8px;">🔴 Extinct in Wild</td>
+      <td style="border: 1px solid #999; padding: 8px;">Habitat destruction</td>
+    </tr>
+    <tr>
+      <td style="border: 1px solid #999; padding: 8px;"><b>Devil's Hole Pupfish</b></td>
+      <td style="border: 1px solid #999; padding: 8px;">🔴 Most Endangered</td>
+      <td style="border: 1px solid #999; padding: 8px;">Lives in single cave only</td>
+    </tr>
+  </table>
+
+  <h2 style="font-size: 28px; margin-top: 20px;">🎯 Key Takeaway</h2>
+  <p style="background: rgba(0,51,102,0.1); padding: 12px; border-radius: 8px; border-left: 4px solid #003366;">
+    Fishing is essential for global food security and livelihoods, but <b>unsustainable practices threaten ocean ecosystems.</b> 
+    By choosing sustainable seafood, supporting marine protected areas, and making informed decisions, we can ensure fish populations thrive for future generations. Protecting rare and endangered fish species is equally critical for maintaining ocean biodiversity.
+  </p>
+</section>
+
+<section id="foods">
+  <h1 style="font-size: 35px;">Coastal Foods & Seafood</h1>
+  
+  <p style="font-size: 25px;">🌊 Overview of Coastal Foods</p>
+  <p>The ocean provides food for over 3 billion people globally. Coastal regions are renowned for their unique and delicious seafood, which forms the backbone of many cultures and cuisines worldwide. From fish to shellfish to seaweed, coastal foods are nutritious, flavorful, and deeply connected to ocean health.</p>
+
+  <div class="home-gallery" aria-label="Coastal seafood images">
+    <div class="item">
+      <img src="ssss.jpg" alt="Fresh seafood">
+      <div class="caption">Fresh caught seafood — nutritious and delicious</div>
+    </div>
+    <div class="item">
+      <img src="s.webp" alt="Shellfish market">
+      <div class="caption">Shellfish — oysters, clams, shrimp & more</div>
+    </div>
+    <div class="item">
+      <img src="f.jpg" alt="Seaweed products">
+      <div class="caption">Seaweed — nutrient-rich ocean vegetables</div>
+    </div>
+  </div>
+
+  <h2 style="font-size: 28px; margin-top: 20px;">🐟 1. Types of Coastal Foods</h2>
+  
+  <p style="font-size: 18px;"><b>Fish</b></p>
+  <p>Fish are the primary protein source from the ocean. Common types include:</p>
+  <ul>
+    <li><b>White Fish:</b> Cod, Haddock, Flounder — mild flavor, flaky texture</li>
+    <li><b>Oily Fish:</b> Salmon, Tuna, Mackerel — rich in Omega-3 fatty acids, heart-healthy</li>
+    <li><b>Freshwater Fish:</b> Trout, Tilapia — milder taste, sustainable options</li>
+    <li><b>Exotic Fish:</b> Sea Bass, Grouper, Snapper — premium, flavorful</li>
+  </ul>
+
+  <p style="font-size: 18px;"><b>Shellfish & Crustaceans</b></p>
+  <ul>
+    <li><b>Mollusks:</b> Oysters, Clams, Mussels, Scallops, Squid — tender, delicate flavors</li>
+    <li><b>Crustaceans:</b> Shrimp, Crab, Lobster — sweet, succulent meat</li>
+    <li><b>Benefit:</b> Rich in minerals, low in fat, great source of protein</li>
+  </ul>
+
+  <p style="font-size: 18px;"><b>Seaweed & Sea Vegetables</b></p>
+  <ul>
+    <li><b>Nori:</b> Used in sushi, rich in iodine and vitamins</li>
+    <li><b>Kelp:</b> Used in Asian cuisine, highly nutritious</li>
+    <li><b>Dulse:</b> Red seaweed with mineral-rich profile</li>
+    <li><b>Spirulina:</b> Superfood packed with protein and antioxidants</li>
+  </ul>
+
+  <p style="font-size: 18px;"><b>Other Coastal Foods</b></p>
+  <ul>
+    <li><b>Sea Urchin (Uni):</b> Delicacy in Japanese and Mediterranean cuisines</li>
+    <li><b>Seagrass & Kelp:</b> Used in salads, soups, and health supplements</li>
+    <li><b>Fish Roe (Caviar):</b> Premium seafood delicacy</li>
+  </ul>
+
+  <h2 style="font-size: 28px; margin-top: 20px;">🌍 2. Famous Coastal Foods by Region</h2>
+  
+  <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+    <tr style="background: #e0e7ff;">
+      <th style="border: 1px solid #999; padding: 8px;"><b>Region</b></th>
+      <th style="border: 1px solid #999; padding: 8px;"><b>Famous Dishes</b></th>
+      <th style="border: 1px solid #999; padding: 8px;"><b>Key Ingredients</b></th>
+    </tr>
+    <tr>
+      <td style="border: 1px solid #999; padding: 8px;"><b>Japan</b></td>
+      <td style="border: 1px solid #999; padding: 8px;">Sushi, Sashimi, Miso soup, Tempura</td>
+      <td style="border: 1px solid #999; padding: 8px;">Fish, Shrimp, Seaweed (Nori)</td>
+    </tr>
+    <tr>
+      <td style="border: 1px solid #999; padding: 8px;"><b>Mediterranean</b></td>
+      <td style="border: 1px solid #999; padding: 8px;">Paella, Grilled Fish, Seafood Pasta</td>
+      <td style="border: 1px solid #999; padding: 8px;">Fish, Squid, Mussels, Olive oil</td>
+    </tr>
+    <tr>
+      <td style="border: 1px solid #999; padding: 8px;"><b>Southeast Asia</b></td>
+      <td style="border: 1px solid #999; padding: 8px;">Tom Yum, Fish Curries, Spring rolls</td>
+      <td style="border: 1px solid #999; padding: 8px;">Shrimp, Fish, Seaweed</td>
+    </tr>
+    <tr>
+      <td style="border: 1px solid #999; padding: 8px;"><b>Scandinavia</b></td>
+      <td style="border: 1px solid #999; padding: 8px;">Smoked Salmon, Fish Soup, Pickled Fish</td>
+      <td style="border: 1px solid #999; padding: 8px;">Salmon, Cod, Herring</td>
+    </tr>
+    <tr>
+      <td style="border: 1px solid #999; padding: 8px;"><b>Latin America</b></td>
+      <td style="border: 1px solid #999; padding: 8px;">Ceviche, Fish Tacos, Seafood Soups</td>
+      <td style="border: 1px solid #999; padding: 8px;">Fish, Shrimp, Lime, Cilantro</td>
+    </tr>
+    <tr>
+      <td style="border: 1px solid #999; padding: 8px;"><b>West Africa</b></td>
+      <td style="border: 1px solid #999; padding: 8px;">Jollof Rice with Fish, Fish Stew</td>
+      <td style="border: 1px solid #999; padding: 8px;">Fish, Shrimp, Spices</td>
+    </tr>
+  </table>
+
+  <h2 style="font-size: 28px; margin-top: 20px;">⭐ 3. Most Famous Coastal Dishes Worldwide</h2>
+  
+  <p style="font-size: 18px;"><b>🍣 Sushi (Japan)</b></p>
+  <p>Originated in Japan, sushi combines seasoned rice with fresh fish, seafood, and vegetables. It's now a global phenomenon enjoyed in restaurants worldwide. Sushi is not only delicious but also represents the art of seafood preparation.</p>
+
+  <p style="font-size: 18px;"><b>🥘 Paella (Spain)</b></p>
+  <p>A traditional Spanish dish from Valencia featuring saffron-infused rice with seafood like shrimp, mussels, and fish. Paella is a celebration of coastal Mediterranean flavors and is often served at festivals and special occasions.</p>
+
+  <p style="font-size: 18px;"><b>🍋 Ceviche (Peru & Latin America)</b></p>
+  <p>Fresh raw fish "cooked" in lime juice with onions, cilantro, and peppers. Ceviche showcases the freshness of coastal fish and is a staple in Peru, Ecuador, and other Latin American countries.</p>
+
+  <p style="font-size: 18px;"><b>🦞 Lobster Rolls (USA - New England)</b></p>
+  <p>Fresh lobster meat mixed with mayo and served in a toasted bun. A classic American coastal dish that highlights the premium quality of lobster from the Atlantic Ocean.</p>
+
+  <p style="font-size: 18px;"><b>🐟 Fish & Chips (UK & Ireland)</b></p>
+  <p>Crispy battered fish served with fried potatoes. A beloved comfort food that originated in coastal British towns and is now enjoyed globally.</p>
+
+  <p style="font-size: 18px;"><b>🥘 Tom Yum (Thailand)</b></p>
+  <p>A spicy and tangy shrimp soup made with lemongrass, galangal, and lime. Tom Yum represents the rich seafood traditions of Southeast Asian coastal regions.</p>
+
+  <h2 style="font-size: 28px; margin-top: 20px;">💪 4. Nutritional Benefits of Seafood</h2>
+  
+  <ul>
+    <li><b>Omega-3 Fatty Acids:</b> Reduce inflammation, support heart & brain health</li>
+    <li><b>High Protein:</b> Essential for muscle growth and repair</li>
+    <li><b>Vitamins & Minerals:</b> Rich in Vitamin D, Selenium, Iodine, and B vitamins</li>
+    <li><b>Low in Fat:</b> Most seafood is lower in saturated fat than red meat</li>
+    <li><b>Sustainable Energy:</b> Seafood provides lasting energy without excess calories</li>
+  </ul>
+
+  <h2 style="font-size: 28px; margin-top: 20px;">🌱 5. Sustainable Seafood Choices</h2>
+  
+  <p>To protect ocean health while enjoying coastal foods:</p>
+  <ul>
+    <li>✅ Choose MSC-certified sustainable seafood</li>
+    <li>✅ Eat smaller, abundant fish species (sardines, mackerel, anchovies)</li>
+    <li>✅ Support local, artisanal fisheries</li>
+    <li>✅ Avoid endangered species (bluefin tuna, certain sharks)</li>
+    <li>✅ Try seaweed and kelp as sustainable protein alternatives</li>
+    <li>✅ Research fish farming practices before buying farmed seafood</li>
+  </ul>
+
+  <h2 style="font-size: 28px; margin-top: 20px;">🏥 6. Dietary Recommendations</h2>
+  
+  <p><b>How Much Seafood Should You Eat?</b></p>
+  <ul>
+    <li>🐟 <b>Adults:</b> 2-3 servings per week (100-150g per serving)</li>
+    <li>👧 <b>Children:</b> 1-2 servings per week (smaller portions)</li>
+    <li>⚠️ <b>Pregnant Women:</b> Avoid high-mercury fish; choose low-mercury options</li>
+  </ul>
+
+  <p><b>Low-Mercury Fish (Safe to Eat Regularly):</b></p>
+  <p>Salmon, Sardines, Anchovies, Mackerel, Cod, Tilapia, Shrimp</p>
+
+  <p><b>High-Mercury Fish (Limit Consumption):</b></p>
+  <p>Shark, Swordfish, King Mackerel, Tilefish</p>
+
+  <h2 style="font-size: 28px; margin-top: 20px;">🍽️ 7. Traditional Coastal Cooking Methods</h2>
+  
+  <ul>
+    <li><b>Grilling:</b> Charred exterior, moist interior — popular in Mediterranean & Latin America</li>
+    <li><b>Steaming:</b> Preserves delicate flavors — common in Asian cuisines</li>
+    <li><b>Baking:</b> Gentle cooking method — retains nutrients</li>
+    <li><b>Frying:</b> Creates crispy texture — traditional in British and American cuisine</li>
+    <li><b>Curing & Smoking:</b> Preserves fish — Scandinavian tradition</li>
+    <li><b>Raw Preparation:</b> Sushi, Ceviche — showcases fish freshness</li>
+  </ul>
+
+  <h2 style="font-size: 28px; margin-top: 20px;">🌍 8. Cultural Significance of Coastal Foods</h2>
+  
+  <p>Coastal foods are more than just nutrition — they're deeply woven into cultural identity:</p>
+  <ul>
+    <li><b>Traditions:</b> Family recipes passed down through generations</li>
+    <li><b>Festivals:</b> Seafood festivals celebrate regional dishes and ocean heritage</li>
+    <li><b>Livelihoods:</b> Fisheries support millions of jobs worldwide</li>
+    <li><b>Tourism:</b> Coastal cuisine attracts food tourists and boosts local economies</li>
+    <li><b>Identity:</b> Coastal communities define themselves through their seafood traditions</li>
+  </ul>
+
+  <h2 style="font-size: 28px; margin-top: 20px;">🎯 Key Takeaway</h2>
+  <p style="background: rgba(0,51,102,0.1); padding: 12px; border-radius: 8px; border-left: 4px solid #003366;">
+    Coastal foods are a vital source of nutrition, culture, and livelihoods for billions of people. By choosing <b>sustainable seafood, supporting local fisheries, and respecting ocean ecosystems</b>, we can continue to enjoy the bounty of the sea while protecting it for future generations.
+  </p>
+</section>
+
+<section id="biodiversity">
+  <h1 style="font-size: 35px;">Biodiversity</h1>
+  <p style="font-size: 20px;">Coastal zones are among the most productive and biologically diverse environments on Earth. They host a range of habitats—from mangroves and seagrass beds to coral reefs and estuaries—that support fish, birds, mammals, and countless invertebrates.</p>
+
+  <div class="climate-gallery" aria-label="Coastal biodiversity gallery">
+    <div class="item">
+      <img src="t2.jpeg" alt="Colorful coral reef">
+      <div class="caption">Coral reefs — biodiversity hotspots</div>
+    </div>
+    <div class="item">
+      <img src="t1.jpg" alt="Sea turtle swimming">
+      <div class="caption">Sea turtles — migratory coastal species</div>
+    </div>
+    <div class="item">
+      <img src="https://images.pexels.com/photos/417074/pexels-photo-417074.jpeg" alt="Mangrove coastline">
+      <div class="caption">Mangroves & estuaries — nurseries for juveniles</div>
+    </div>
+  </div>
+
+  <h2 style="font-size: 28px; margin-top: 18px;">Key Coastal Habitats</h2>
+  <ul>
+    <li><b>Mangroves</b> — protect shorelines, trap sediment, and provide nurseries for many fish and crustaceans.</li>
+    <li><b>Seagrass beds</b> — important feeding grounds for dugongs, turtles and many juvenile fish.</li>
+    <li><b>Coral reefs</b> — extremely diverse communities that support fisheries and tourism.</li>
+    <li><b>Estuaries</b> — nutrient-rich mixing zones that support migratory birds and juvenile fish.</li>
+    <li><b>Rocky shores & tidal pools</b> — home to specialized invertebrates and algae.</li>
+  </ul>
+
+  <h2 style="font-size: 28px; margin-top: 18px;">Species Highlights</h2>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: start;">
+    <div style="display:flex; gap:12px; align-items:flex-start;">
+      <img src="t3.jpeg" alt="Green sea turtle" style="width:120px; height:80px; object-fit:cover; border-radius:8px;">
+      <div>
+        <b>Green Sea Turtle</b>
+        <p style="margin:6px 0 0;">Long-distance migratory species that feed on seagrass and maintain healthy seagrass ecosystems. Threats: bycatch, coastal development, pollution.</p>
+      </div>
+    </div>
+
+    <div style="display:flex; gap:12px; align-items:flex-start;">
+      <img src="t4.jpeg" alt="Coral closeup" style="width:120px; height:80px; object-fit:cover; border-radius:8px;">
+      <div>
+        <b>Coral Species</b>
+        <p style="margin:6px 0 0;">Corals build reefs that shelter thousands of species. Threats: warming oceans, acidification, and destructive fishing practices.</p>
+      </div>
+    </div>
+
+    <div style="display:flex; gap:12px; align-items:flex-start;">
+      <img src="https://images.pexels.com/photos/417074/pexels-photo-417074.jpeg" alt="Mangrove roots" style="width:120px; height:80px; object-fit:cover; border-radius:8px;">
+      <div>
+        <b>Mangrove Communities</b>
+        <p style="margin:6px 0 0;">Mangroves stabilize coasts and provide crucial nursery habitat for many commercially important fish. Threats: clearance for shrimp farms and coastal construction.</p>
+      </div>
+    </div>
+  </div>
+
+  <h2 style="font-size: 28px; margin-top: 18px;">Threats & Conservation</h2>
+  <ul>
+    <li><b>Overfishing & bycatch</b> — reduces population sizes and alters food webs.</li>
+    <li><b>Habitat loss</b> — mangrove clearance, seagrass damage, and coral destruction.</li>
+    <li><b>Pollution</b> — plastics, runoff and chemical contaminants harm wildlife.</li>
+    <li><b>Climate change</b> — warming, acidification, and sea-level rise stress coastal ecosystems.</li>
+  </ul>
+
+  <p style="font-size: 18px; margin-top: 12px;"><b>How you can help:</b></p>
+  <ul>
+    <li>Choose sustainable seafood and support fishery reforms.</li>
+    <li>Reduce plastic use and properly dispose of waste.</li>
+    <li>Support local coastal habitat restoration (mangroves, seagrasses, reefs).</li>
+    <li>Volunteer or donate to credible marine conservation organizations.</li>
+  </ul>
+
+  <h2 style="font-size: 28px; margin-top: 18px;">Ecosystem Services Provided by Coastal Biodiversity</h2>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start; margin-top:10px;">
+    <div>
+      <ul>
+        <li><b>Provisioning:</b> Fisheries and seafood that feed millions.</li>
+        <li><b>Regulating:</b> Mangroves and reefs buffer storm surge and erosion.</li>
+        <li><b>Supporting:</b> Nursery habitats for juvenile fish and crustaceans.</li>
+        <li><b>Carbon storage:</b> Seagrasses and mangroves sequester large amounts of carbon.</li>
+        <li><b>Cultural & recreational:</b> Tourism, fishing traditions and coastal livelihoods.</li>
+      </ul>
+    </div>
+    <div>
+      <img src="https://images.pexels.com/photos/2218563/pexels-photo-2218563.jpeg" alt="Aerial mangrove coastline" style="width:100%; height:150px; object-fit:cover; border-radius:8px;">
+      <div class="caption">Aerial view: mangroves protecting the coastline</div>
+    </div>
+  </div>
+
+  <h2 style="font-size: 28px; margin-top: 18px;">Keystone & Indicator Species</h2>
+  <ul>
+    <li><b>Seagrass grazers (e.g., green turtles):</b> maintain seagrass productivity and prevent overgrowth of algae.</li>
+    <li><b>Coral-building species:</b> coral health indicates reef condition and supports diverse fisheries.</li>
+    <li><b>Filter feeders (oysters, mussels):</b> improve water quality and clarity.</li>
+    <li><b>Apex predators (sharks):</b> regulate food webs and maintain balanced populations.</li>
+  </ul>
+
+  <h2 style="font-size: 28px; margin-top: 18px;">Monitoring, Research & Citizen Science</h2>
+  <ul>
+    <li><b>Regular surveys:</b> diver-led reef surveys and transects track coral and fish health.</li>
+    <li><b>Tagging & telemetry:</b> satellite tags track migrations and critical habitats.</li>
+    <li><b>eDNA:</b> environmental DNA sampling detects species presence from water samples.</li>
+    <li><b>Citizen science:</b> beach cleanups, community reef monitoring, and photo-submissions help collect long-term data.</li>
+  </ul>
+
+  <h2 style="font-size: 28px; margin-top: 18px;">Policy, Protection & Marine Protected Areas</h2>
+  <ul>
+    <li><b>Marine Protected Areas (MPAs):</b> effectively conserve biodiversity when well-managed and enforced.</li>
+    <li><b>Sustainable fisheries management:</b> catch limits, gear restrictions and seasonal closures help recover stocks.</li>
+    <li><b>Habitat restoration:</b> mangrove planting, seagrass restoration and coral reef rehabilitation rebuild ecosystem services.</li>
+    <li><b>International cooperation:</b> migratory species and shared fisheries require cross-border agreements.</li>
+  </ul>
+
+  <h2 style="font-size: 28px; margin-top: 18px;">Further Resources</h2>
+  <ul>
+    <li>IUCN Red List, NOAA Marine Protected Areas, and major conservation NGOs provide guidance and project examples.</li>
+    <li>Look for local coastal restoration groups and volunteer programs to get involved.</li>
+  </ul>
+
+</section>
+
+<section id="currents">
+  <h1 style="font-size: 35px;">Ocean Currents</h1>
+  <p style="font-size: 20px;">Ocean currents are continuous, directed movements of seawater driven by wind, differences in water density, the Earth's rotation, and the shape of ocean basins. Currents operate at the surface and in the deep ocean, moving heat, nutrients, and organisms across vast distances.</p>
+
+  <div class="climate-gallery" aria-label="Ocean currents gallery">
+    <div class="item">
+      <img src="up1.jpg" alt="Satellite view of ocean surface currents">
+      <div class="caption">Surface currents shown from above</div>
+    </div>
+    <div class="item">
+      <img src="up2.jpg" alt="Warm current near coast">
+      <div class="caption">Warm western boundary current (e.g. Gulf Stream)</div>
+    </div>
+    <div class="item">
+      <img src="up3.jpg" alt="Upwelling coastal waters">
+      <div class="caption">Coastal upwelling — nutrient-rich waters</div>
+    </div>
+  </div>
+
+  <h2 style="font-size: 28px; margin-top: 18px;">Types of Currents</h2>
+  <ul>
+    <li><b>Surface currents</b> — driven mainly by wind; influence climate and transport warm/cold water across oceans.</li>
+    <li><b>Deep (thermohaline) currents</b> — driven by density differences from temperature and salinity; part of the global conveyor belt.</li>
+    <li><b>Coastal currents & upwelling</b> — local currents produced by wind and coastline shape; upwelling brings nutrient-rich deep water to the surface.</li>
+  </ul>
+
+  <h2 style="font-size: 28px; margin-top: 18px;">What Drives Ocean Currents?</h2>
+  <ul>
+    <li><b>Wind stress:</b> major driver of surface circulation (trade winds, westerlies).</li>
+    <li><b>Coriolis effect:</b> due to Earth's rotation, it deflects moving water and shapes gyres.</li>
+    <li><b>Density gradients:</b> temperature and salinity differences create sinking and rising motions (thermohaline circulation).</li>
+    <li><b>Coastlines & seafloor topography:</b> redirect and intensify currents along continental margins.</li>
+  </ul>
+
+  <h2 style="font-size: 28px; margin-top: 18px;">Major Currents & Examples</h2>
+  <ul>
+    <li><b>Gulf Stream / North Atlantic Drift</b> — warm current that moderates Western Europe's climate.</li>
+    <li><b>Kuroshio Current</b> — western boundary current in the North Pacific (Japan's warm current).</li>
+    <li><b>Antarctic Circumpolar Current</b> — the strongest current, encircling Antarctica and connecting ocean basins.</li>
+    <li><b>Peru (Humboldt) Current</b> — a cold, nutrient-rich upwelling current that supports rich fisheries.</li>
+  </ul>
+
+  <h2 style="font-size: 28px; margin-top: 18px;">Why Currents Matter</h2>
+  <ul>
+    <li><b>Climate regulation:</b> redistribute heat from equator to poles and influence weather patterns.</li>
+    <li><b>Nutrient transport:</b> upwelling zones fuel productive fisheries and high biodiversity.</li>
+    <li><b>Migration pathways:</b> many marine species use currents for long-distance movement.</li>
+    <li><b>Pollutant dispersal:</b> currents carry plastics and contaminants across oceans.</li>
+  </ul>
+
+  <h2 style="font-size: 28px; margin-top: 18px;">Human Impacts & Monitoring</h2>
+  <ul>
+    <li><b>Climate change:</b> alters current strength and patterns (e.g., melting polar ice affects thermohaline circulation).</li>
+    <li><b>Shipping & pollution:</b> introduce contaminants that currents spread widely.</li>
+    <li><b>Monitoring tools:</b> satellites (sea surface temperature, altimetry), ARGO floats, drifters, and numerical ocean models.</li>
+  </ul>
+
+  <p style="font-size: 18px; margin-top: 12px;"><b>Learn more / Explore:</b> Try tracking sea surface temperature maps and ARGO float data to see currents and water mass movements in real time.</p>
+
+  <h2 style="font-size: 28px; margin-top: 18px;">The Global Conveyor Belt (Thermohaline Circulation)</h2>
+  <ul>
+    <li><b>How it works:</b> Cold, salty water sinks at the poles (North Atlantic, around Antarctica) and flows slowly along the ocean floor toward the equator.</li>
+    <li><b>Deep currents:</b> this deep water circulation takes ~1,000 years to complete a full cycle, carrying heat and nutrients globally.</li>
+    <li><b>Return path:</b> warm surface currents (Gulf Stream, etc.) return water to the poles, completing the loop.</li>
+    <li><b>Climate importance:</b> the conveyor redistributes vast amounts of heat; disruption could drastically cool Western Europe and affect global climate.</li>
+  </ul>
+
+  <h2 style="font-size: 28px; margin-top: 18px;">Ekman Spiral & Wind-Driven Motion</h2>
+  <ul>
+    <li><b>Ekman effect:</b> wind pushes the ocean surface, but the Coriolis effect deflects that water to the right (Northern Hemisphere) or left (Southern Hemisphere).</li>
+    <li><b>Spiral pattern:</b> each layer below deflects further, creating a "spiral" of motion; average motion is 90° to wind direction.</li>
+    <li><b>Ekman transport:</b> the net effect moves water perpendicular to wind, explaining why coastal winds cause upwelling or downwelling.</li>
+  </ul>
+
+  <h2 style="font-size: 28px; margin-top: 18px;">Ocean Gyres</h2>
+  <ul>
+    <li><b>What are gyres?</b> — Large circular current systems in each ocean basin, driven by trade winds and westerlies.</li>
+    <li><b>Subtropical gyres:</b> found at ~30° latitude (North and South Atlantic, Pacific, Indian); rotate clockwise (Northern Hemisphere) or counterclockwise (Southern Hemisphere).</li>
+    <li><b>Subpolar gyres:</b> found at high latitudes, rotate opposite to subtropical gyres.</li>
+    <li><b>Gyre centers:</b> slowly sinking water creates low-productivity zones and accumulates floating debris (e.g., Great Pacific Garbage Patch).</li>
+  </ul>
+
+  <h2 style="font-size: 28px; margin-top: 18px;">Currents & Marine Ecosystems</h2>
+  <ul>
+    <li><b>Upwelling zones:</b> cold, nutrient-rich currents (Peru, Benguela, California Currents) support some of world's richest fisheries.</li>
+    <li><b>Larval dispersal:</b> ocean currents carry fish and coral larvae over vast distances, connecting distant populations.</li>
+    <li><b>Species migration:</b> eels, turtles, and whales use currents as "ocean highways" for breeding migrations.</li>
+    <li><b>Thermal connectivity:</b> warm currents allow tropical species to range farther poleward than latitude alone would predict.</li>
+  </ul>
+
+  <h2 style="font-size: 28px; margin-top: 18px;">Student Investigations & Activities</h2>
+  <ul>
+    <li><b>Drifter tracking:</b> release biodegradable drifters or follow virtual drifter paths online to see where currents carry them.</li>
+    <li><b>Sea surface temperature mapping:</b> collect satellite SST data and plot isotherms to identify warm/cold currents and upwelling zones.</li>
+    <li><b>Current velocity measurements:</b> use HF radar data (where available) or analyze satellite altimetry to estimate current speeds.</li>
+    <li><b>Gyre modeling:</b> create simple physical models (rotating tables, water tanks) to visualize how wind and rotation create gyres.</li>
+    <li><b>Climate impact analysis:</b> research how thermohaline circulation changes affect European climate and regional fisheries.</li>
+  </ul>
+
+  <p style="font-size: 18px; margin-top: 12px;"><b>Recommended resources:</b> NOAA Ocean Surface Current Analysis (OSCA), COPERNICUS marine data, NASA PODAAC, and regional oceanographic institutes provide free real-time current data.</p>
+
+</section>
+
+<section id="coral">
+  <h1 style="font-size: 35px;">Coral Reefs</h1>
+  <p style="font-size: 20px;">Coral reefs are underwater structures made by tiny animals called coral polyps. These polyps build hard skeletons that form the reef over many years. Reefs are home to thousands of species and act as natural breakwaters that protect coasts.</p>
+
+  <div class="climate-gallery" aria-label="Coral reef gallery">
+    <div class="item">
+      <img src="cr1.jpeg" alt="Colorful coral reef closeup">
+      <div class="caption">Coral reef close-up — many small animals build the reef</div>
+    </div>
+    <div class="item">
+      <img src="cpc1.jpeg" alt="Diver over coral reef">
+      <div class="caption">Divers exploring a healthy reef — great for learning and research</div>
+    </div>
+    <div class="item">
+      <img src="nh1.jpeg" alt="Shallow reef and lagoon">
+      <div class="caption">Shallow reef and lagoon — nursery habitats for young fish</div>
+    </div>
+  </div>
+
+  <h2 style="font-size: 24px; margin-top: 14px;">Quick facts for students</h2>
+  <ul>
+    <li><b>What are corals?</b> — Tiny animals (polyps) related to jellyfish that live in colonies and build hard skeletons.</li>
+    <li><b>How fast do reefs grow?</b> — Some corals grow only a few millimetres to a few centimetres per year.</li>
+    <li><b>Why are reefs important?</b> — They provide food, homes for fish, protect shorelines, and support tourism and fisheries.</li>
+    <li><b>Where do they live?</b> — Mostly in warm, shallow, clear waters near the equator where sunlight reaches them.</li>
+  </ul>
+
+  <h2 style="font-size: 24px; margin-top: 14px;">Threats to Coral Reefs</h2>
+  <ul>
+    <li><b>Warming oceans:</b> cause coral bleaching when corals lose the algae they need to survive.</li>
+    <li><b>Pollution & runoff:</b> excess nutrients cause algae to overgrow and smother corals.</li>
+    <li><b>Overfishing & destructive fishing:</b> remove key species and damage reef structure.</li>
+    <li><b>Physical damage:</b> anchor drops, careless divers, and coastal development can break reefs.</li>
+  </ul>
+
+  <h2 style="font-size: 24px; margin-top: 14px;">Simple ways students can help</h2>
+  <ul>
+    <li>Learn and share: teach friends about reefs and why they matter.</li>
+    <li>Reduce pollution: avoid single-use plastics and dispose of trash properly.</li>
+    <li>Support sustainable seafood and responsible tourism: choose certified operators.</li>
+    <li>Join local beach clean-ups or reef-monitoring citizen science projects.</li>
+  </ul>
+
+  <h2 style="font-size: 24px; margin-top: 14px;">Coral Biology & Symbiosis</h2>
+  <ul>
+    <li><b>Polyps:</b> individual coral animals (related to sea anemones) that live in colonies and secrete calcium carbonate skeletons.</li>
+    <li><b>Zooxanthellae:</b> single-celled algae (symbionts) that live inside coral tissue and provide nutrients via photosynthesis in exchange for shelter.</li>
+    <li><b>Colony structure:</b> thousands of polyps connected by living tissue, creating complex structures (branching, massive, plate-like) adapted to different water conditions.</li>
+    <li><b>Reproduction:</b> corals reproduce both asexually (budding, fragmentation) and sexually (spawning synchronized by moon phase and temperature).</li>
+  </ul>
+
+  <h2 style="font-size: 24px; margin-top: 14px;">Reef Types & Diversity</h2>
+  <ul>
+    <li><b>Fringing reefs:</b> grow directly along coastlines, providing immediate shore protection.</li>
+    <li><b>Barrier reefs:</b> separated from shore by a lagoon, like the Great Barrier Reef.</li>
+    <li><b>Atoll reefs:</b> circular formations enclosing a lagoon, common in the Pacific.</li>
+    <li><b>Coral species:</b> hundreds of hard (scleractinian) and soft coral types support different ecological niches.</li>
+  </ul>
+
+  <h2 style="font-size: 24px; margin-top: 14px;">Coral Bleaching — What Happens?</h2>
+  <p style="font-size:18px;"><b>How it works:</b> When water temperature rises or other stressors occur, corals expel their symbiotic algae (zooxanthellae). Without the algae, corals turn white (hence "bleaching") and lose their main food source. If conditions improve, corals can recover; if stress persists, they die.</p>
+  <ul>
+    <li><b>Temperature stress:</b> even a 1–2°C rise above normal can trigger bleaching.</li>
+    <li><b>Other stressors:</b> low salinity, pollution, excessive sunlight, and disease can compound temperature stress.</li>
+    <li><b>Recovery window:</b> if conditions stabilize within weeks, many corals regain their algae; prolonged stress leads to death.</li>
+  </ul>
+
+  <h2 style="font-size: 24px; margin-top: 14px;">Restoration & Management</h2>
+  <ul>
+    <li><b>Coral nurseries:</b> scientists grow coral fragments in tanks or underwater nurseries, then transplant them to damaged reefs.</li>
+    <li><b>Reef clean-ups:</b> removing algae, predatory sea stars, and marine debris helps stressed reefs recover.</li>
+    <li><b>No-take marine reserves:</b> protecting fish populations maintains reef balance and resilience.</li>
+    <li><b>Research breeding:</b> selecting heat-tolerant coral strains and studying symbiont diversity for future restoration.</li>
+  </ul>
+
+  <h2 style="font-size: 24px; margin-top: 14px;">Student Research & Monitoring Opportunities</h2>
+  <ul>
+    <li><b>Reef surveys:</b> participate in dive surveys counting fish and assessing coral cover and health (bleaching index).</li>
+    <li><b>Temperature monitoring:</b> set up underwater loggers to track daily temperature swings and identify thermal refugia (cooler spots).</li>
+    <li><b>Photo monitoring:</b> photograph fixed reef locations regularly and compare over time to document recovery or decline.</li>
+    <li><b>Lab studies:</b> measure coral respiration, photosynthesis, or test stress response of coral fragments in controlled conditions.</li>
+  </ul>
+
+  <p style="font-size:18px; margin-top:12px;"><b>Helpful resources:</b> NOAA Coral Reef Watch (satellite bleaching alerts), Coral Reef Alliance, and IUCN guidelines for reef restoration and monitoring.</p>
+
+</section>
+
+<section id="pollution">
+  <h1 style="font-size: 35px;">Pollution</h1>
+  <p style="font-size: 20px;">Coastal pollution comes from many sources — trash and plastics, runoff from land, sewage, oil spills and industrial chemicals. These pollutants harm wildlife, damage habitats, and affect human health and local economies.</p>
+
+  <div class="climate-gallery" aria-label="Coastal pollution gallery">
+    <div class="item">
+      <img src="po1.jpg" alt="Plastic on a beach">
+      <div class="caption">Plastic litter on beaches — common and harmful</div>
+    </div>
+    <div class="item">
+      <img src="po2.jpeg" alt="Oil on water surface">
+      <div class="caption">Oil contamination and sheens on water</div>
+    </div>
+    <div class="item">
+      <img src="po3.jpeg" alt="River pollution flowing into sea">
+      <div class="caption">River runoff carrying pollutants to the coast</div>
+    </div>
+  </div>
+
+  <h2 style="font-size: 28px; margin-top: 18px;">Common Sources</h2>
+  <ul>
+    <li><b>Plastic waste:</b> bottles, bags, fishing gear and microplastics from degraded items.</li>
+    <li><b>Urban & agricultural runoff:</b> fertilizers, pesticides and sediments that flow into rivers and coasts.</li>
+    <li><b>Sewage and untreated wastewater:</b> carries pathogens and nutrients that cause algal blooms.</li>
+    <li><b>Oil spills & shipping:</b> accidental or operational releases of oil and chemicals.</li>
+  </ul>
+
+  <h2 style="font-size: 28px; margin-top: 18px;">Impacts on Nature and People</h2>
+  <ul>
+    <li><b>Wildlife harm:</b> ingestion and entanglement from plastics; toxic effects from chemicals.</li>
+    <li><b>Habitat degradation:</b> smothering of reefs and seagrass beds, reduced water quality.</li>
+    <li><b>Fisheries & food safety:</b> contaminated seafood and economic losses for fishers.</li>
+    <li><b>Human health:</b> exposure to pathogens and toxic chemicals, and loss of safe recreation areas.</li>
+  </ul>
+
+  <h2 style="font-size: 28px; margin-top: 18px;">Microplastics — Tiny but Widespread</h2>
+  <p style="font-size:18px;">Microplastics are small plastic particles (<5mm) that come from broken-down larger plastics, synthetic fibers, and personal care products. They are eaten by plankton and move up the food chain, and are now found in water, sediments, and marine organisms worldwide.</p>
+
+  <h2 style="font-size: 28px; margin-top: 18px;">Solutions & What Students Can Do</h2>
+  <ul>
+    <li><b>Reduce & reuse:</b> avoid single-use plastics, carry reusable bottles and bags.</li>
+    <li><b>Proper disposal:</b> recycle where available and never dump waste into waterways.</li>
+    <li><b>Participate:</b> join beach clean-ups and local monitoring programs.</li>
+    <li><b>Support policy:</b> back bans on single-use plastics and improved wastewater treatment.</li>
+    <li><b>Learn & share:</b> educate peers about sources and effects of coastal pollution.</li>
+  </ul>
+
+  <p style="font-size:18px; margin-top:12px;"><b>Quick classroom activity:</b> Collect and sort litter from a short beach or shoreline survey, count common items, and discuss local actions to reduce the top items found.</p>
+
+  <h2 style="font-size: 28px; margin-top: 18px;">Notable Real-World Incidents</h2>
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; align-items:start;">
+    <div>
+      <b>Deepwater Horizon (2010)</b>
+      <p>The largest offshore oil spill in U.S. history — millions of barrels of oil were released into the Gulf of Mexico. Impacts included massive wildlife mortality, long-term damage to fisheries and coastal habitats, and widespread economic loss for coastal communities.</p>
+    </div>
+    <div>
+      <img src="dee1.webp" alt="Oil on water surface" style="width:100%; height:140px; object-fit:cover; border-radius:8px;">
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; align-items:start; margin-top:8px;">
+    <div>
+      <b>Exxon Valdez (1989)</b>
+      <p>A tanker ran aground in Alaska and spilled tens of millions of gallons of crude oil, causing long-lasting harm to birds, mammals and fisheries. The accident led to stronger tanker safety regulations and spill response planning.</p>
+    </div>
+    <div>
+      <img src="exx1.jpg" alt="Polluted shoreline" style="width:100%; height:140px; object-fit:cover; border-radius:8px;">
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; align-items:start; margin-top:8px;">
+    <div>
+      <b>Great Pacific Garbage Patch</b>
+      <p>A large accumulation of floating plastic and debris in the North Pacific gyre. It illustrates how ocean currents concentrate plastics far from their sources and why upstream waste management is critical.</p>
+    </div>
+    <div>
+      <img src="gp1.avif" alt="Plastic litter on beach" style="width:100%; height:140px; object-fit:cover; border-radius:8px;">
+    </div>
+  </div>
+
+  <h2 style="font-size: 28px; margin-top: 18px;">Control, Cleanup & Long-term Management</h2>
+  <ul>
+    <li><b>Immediate response:</b> containment booms, skimmers and targeted cleanup reduce oil spread; trained teams evaluate risks before using chemical dispersants.</li>
+    <li><b>Waste management improvements:</b> better collection, recycling, and bans on problematic single-use plastics reduce inputs to coasts.</li>
+    <li><b>Stormwater & agricultural controls:</b> green infrastructure, retention ponds, buffer strips and improved fertilizer management reduce nutrient and sediment runoff.</li>
+    <li><b>Upgrading wastewater treatment:</b> nutrient removal, virus/bacteria treatment, and safe disposal minimize sewage impacts.</li>
+    <li><b>Fishing gear recovery programs:</b> retrieve abandoned, lost, or discarded fishing gear (ghost gear) to reduce entanglement and habitat damage.</li>
+    <li><b>Policy & international agreements:</b> implement regulations (e.g., MARPOL, local laws), enforce penalties for illegal dumping, and fund monitoring and response capacity.</li>
+    <li><b>Community involvement:</b> citizen monitoring, beach clean-ups, and local advocacy speed detection and reduce pollution inputs.</li>
+  </ul>
+
+  <h2 style="font-size: 28px; margin-top: 18px;">How governments & organizations measure success</h2>
+  <ul>
+    <li>Reduced counts of beach litter items per meter from repeated surveys</li>
+    <li>Improved water quality indicators (lower nutrient and bacterial counts)</li>
+    <li>Recovery of impacted species populations and reef/ seagrass health</li>
+    <li>Faster spill response times and better preparedness drills</li>
+  </ul>
+
+  <p style="font-size:18px; margin-top:12px;"><b>Resources & further reading:</b> NOAA Marine Debris Program, IUCN reports on marine pollution, and national environmental agencies provide case studies and guidance for managing coastal pollution.</p>
+
+</section>
+
+<!-- ----------------- Quiz Page ------------------ -->
+<section id="quiz">
+  <h1 style="font-size: 35px;">Ocean Quiz</h1>
+  <div id="quiz-container"></div>
+  <div style="margin-top:12px">
+    <button onclick="submitQuiz()">Submit Quiz</button>
+    <button onclick="resetQuiz()" style="background:#666;margin-left:8px">Reset</button>
+  </div>
+  <h2 id="quiz-result"></h2>
+</section>
+
+<!-- ----------------- Contact Page ------------------ -->
+<section id="contact">
+  <h1 style="font-size: 35px;">Contact Us</h1>
+  <input type="text" placeholder="Your Name">
+  <input type="email" placeholder="Your Email">
+  <textarea rows="4" placeholder="Message"></textarea>
+  <button>Send</button>
+</section>
+
+<!-- ----------------- Login Page ------------------ -->
+<section id="login">
+  <h1 style="font-size: 35px;">Login</h1>
+  <input type="text" placeholder="Username">
+  <input type="password" placeholder="Password">
+  <button>Login</button>
+</section>
+
+<script>
+/* ----------------- Theme Toggle Functions ------------------ */
+function toggleTheme() {
+  const body = document.body;
+  const isDarkMode = body.classList.toggle('dark-mode');
+  const button = document.getElementById('theme-toggle');
+  
+  // Save preference to localStorage
+  localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+  
+  // Update button text
+  button.textContent = isDarkMode ? '☀️ Light' : '🌙 Dark';
+}
+
+// Load theme preference on page load
+function initTheme() {
+  const savedTheme = localStorage.getItem('theme') || 'light';
+  const button = document.getElementById('theme-toggle');
+  
+  if (savedTheme === 'dark') {
+    document.body.classList.add('dark-mode');
+    button.textContent = '☀️ Light';
+  } else {
+    button.textContent = '🌙 Dark';
+  }
+}
+
+// Initialize theme on page load
+document.addEventListener('DOMContentLoaded', initTheme);
+
+/* ----------------- Page Switching ------------------ */
+function showPage(pageId) {
+  document.querySelectorAll("section").forEach(sec =>
+    sec.classList.remove("active")
+  );
+  document.getElementById(pageId).classList.add("active");
+}
+
+/* ----------------- Quiz Data (multiple-choice) ------------------ */
+const questions = [
+  { q: "What covers 71% of Earth?", options: ["Continent","Ocean","Desert","Forest"], a: 1 },
+  { q: "What causes rising sea levels?", options: ["Earthquakes","Volcanic activity","Climate change","Tides"], a: 2 },
+  { q: "What harmful waste affects marine life?", options: ["Plastics","Wood","Sand","Salt"], a: 0 },
+  { q: "What is the largest ocean?", options: ["Atlantic","Indian","Pacific","Arctic"], a: 2 },
+  { q: "Coral reefs are made by?", options: ["Coral polyps","Sand","Algae","Rocks"], a: 0 },
+  { q: "What drives ocean currents?", options: ["Gravity","Wind","Sunlight","Fish"], a: 1 },
+  { q: "What is overfishing?", options: ["Sustainable fishing","Excessive fishing","Catch-and-release","Aquaculture"], a: 1 },
+  { q: "What gas increases ocean acidity?", options: ["Oxygen","Nitrogen","CO2","Hydrogen"], a: 2 },
+  { q: "What protects coastlines?", options: ["Coral reefs","Mountains","Forests","Dunes"], a: 0 },
+  { q: "What is essential for marine biodiversity?", options: ["Healthy ecosystems","Boats","Pollution","Oil"], a: 0 }
+];
+
+/* Load quiz as multiple-choice */
+let quizBox = document.getElementById("quiz-container");
+questions.forEach((q, i) => {
+  let optsHtml = q.options.map((opt, idx) => `
+      <div style="margin:6px 0;"><label><input type=\"radio\" name=\"q${i}\" value=\"${idx}\"> ${opt}</label></div>
+  `).join('');
+
+  quizBox.innerHTML += `
+    <div class="quiz-question">
+      <p><b>${i+1}. ${q.q}</b></p>
+      ${optsHtml}
+    </div>
+  `;
+});
+
+/* ----------------- Submit Quiz ------------------ */
+function submitQuiz() {
+  let score = 0;
+  let answers = [];
+  questions.forEach((q, i) => {
+    let selected = document.querySelector(`input[name=\"q${i}\"]:checked`);
+    let selectedIndex = selected ? parseInt(selected.value, 10) : -1;
+    if (selected && selectedIndex === q.a) score++;
+    answers.push({
+      qNum: i + 1,
+      question: q.q,
+      userAnswer: selectedIndex >= 0 ? q.options[selectedIndex] : "Not answered",
+      correctAnswer: q.options[q.a],
+      isCorrect: selectedIndex === q.a
+    });
+  });
+
+  let scoreHtml = `You scored <b>${score}/${questions.length}</b>`;
+  
+  // Add answers review
+  let answersHtml = '<h3 style="margin-top: 20px;">Answer Review:</h3>';
+  answers.forEach(ans => {
+    let resultColor = ans.isCorrect ? '#28a745' : '#dc3545';
+    let resultText = ans.isCorrect ? '✓ Correct' : '✗ Incorrect';
+    answersHtml += `
+      <div style="margin: 10px 0; padding: 10px; border-left: 4px solid ${resultColor}; background: rgba(0,0,0,0.02); border-radius: 4px;">
+        <p><b>Q${ans.qNum}: ${ans.question}</b></p>
+        <p><b>Your answer:</b> ${ans.userAnswer} <span style="color:${resultColor};">${resultText}</span></p>
+        <p><b>Correct answer:</b> ${ans.correctAnswer}</p>
+      </div>
+    `;
+  });
+
+  document.getElementById("quiz-result").innerHTML = scoreHtml + answersHtml;
+}
+
+function resetQuiz() {
+  questions.forEach((q, i) => {
+    let selected = document.querySelector(`input[name=\"q${i}\"]:checked`);
+    if (selected) selected.checked = false;
+    });
+    document.getElementById("quiz-result").innerHTML = '';
+  }
+
+  /* Image Modal Functions */
+  function openImageModal(imgSrc) {
+    document.getElementById('imageModal').classList.add('active');
+    document.getElementById('modalImage').src = imgSrc;
+  }
+
+  function closeImageModal() {
+    document.getElementById('imageModal').classList.remove('active');
+  }
+
+  // Attach image click handlers inside a container
+  function attachImageHandlers(container) {
+    container.querySelectorAll('img').forEach(img => {
+      img.style.cursor = 'pointer';
+      img.addEventListener('click', function(e) {
+        e.stopPropagation();
+        openImageModal(this.src);
+      });
+    });
+  }
+
+  // Detect if device is mobile/touch-enabled
+  const isMobile = window.innerWidth < 768 || ('ontouchstart' in window);
+
+  // Scroll direction detection
+  let lastScrollY = window.scrollY || 0;
+  let scrollingUp = false;
+  
+  // Use passive event listener to prevent blocking scroll on mobile
+  window.addEventListener('scroll', () => {
+    const y = window.scrollY || 0;
+    scrollingUp = y < lastScrollY;
+    lastScrollY = y;
+  }, { passive: true });
+
+  // Only enable popup observer on desktop devices (not mobile)
+  if (!isMobile) {
+    // IntersectionObserver to detect sections entering view
+    const popupObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && scrollingUp) {
+          // show popup for this section
+          showSectionPopup(entry.target);
+        }
+      });
+    }, { threshold: 0.6 });
+
+    // Observe all top-level sections
+    document.querySelectorAll('section').forEach(sec => {
+      if (!sec.id || sec.id === 'imageModal' || sec.id === 'sectionPopup') return;
+      popupObserver.observe(sec);
+    });
+  }
+
+  // Show popup with cloned section content
+  function showSectionPopup(sectionEl) {
+    const popup = document.getElementById('sectionPopup');
+    const content = document.getElementById('popupContent');
+    // clone section content (shallow clone) and place inside
+    content.innerHTML = '';
+    const clone = sectionEl.cloneNode(true);
+    // remove any interactive ids that might conflict
+    clone.querySelectorAll('[id]').forEach(n => n.removeAttribute('id'));
+    content.appendChild(clone);
+    // attach image handlers inside cloned content
+    attachImageHandlers(content);
+    popup.classList.add('active');
+    popup.setAttribute('aria-hidden', 'false');
+  }
+
+  // Close popup
+  function closeSectionPopup() {
+    const popup = document.getElementById('sectionPopup');
+    const content = document.getElementById('popupContent');
+    popup.classList.remove('active');
+    popup.setAttribute('aria-hidden', 'true');
+    content.innerHTML = '';
+  }
+
+  // Close control
+  document.getElementById('popupClose').addEventListener('click', closeSectionPopup);
+  // Clicking outside popup-card closes it
+  document.getElementById('sectionPopup').addEventListener('click', function(e) {
+    if (e.target === this) closeSectionPopup();
+  });
+
+  // Ensure image modal and popup image handlers are attached on load
+  document.addEventListener('DOMContentLoaded', function() {
+    initTheme();
+    attachImageHandlers(document);
+  });
+
+  // Close image modal when clicking outside the image
+  document.getElementById('imageModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+      closeImageModal();
+    }
+  });
+
+  // Close image modal with Escape key and also close section popup
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      closeImageModal();
+      closeSectionPopup();
+    }
+  });
+  </script>
+
+  </body>
+  </html>
