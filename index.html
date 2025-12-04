@@ -644,7 +644,8 @@ section h1 {
 /* Comprehensive Mobile-Friendly Media Queries */
 @media (max-width: 768px) {
   nav { padding: 8px 10px; gap: 10px; }
-  nav .nav-links { gap: 8px; display: none; }
+  nav .nav-links { gap: 8px; display: none !important; }
+  #hamburger { display: flex !important; }
   section { padding: 65px 14px 16px 14px; }
   .home-gallery, .fishing-gallery {
     grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
@@ -658,6 +659,8 @@ section h1 {
 
 @media (max-width: 480px) {
   nav { padding: 6px 8px; gap: 8px; }
+  nav .nav-links { display: none !important; }
+  #hamburger { display: flex !important; }
   nav a { padding: 5px 6px; font-size: 11px; }
   #theme-toggle { padding: 6px 8px; font-size: 11px; }
   section { padding: 60px 10px 12px 10px; }
@@ -714,9 +717,18 @@ section h1 {
   </div>
 </div>
 
-<!-- Navigation -->
+<!-- Navigation: top bar + mobile overlay -->
 <nav>
-  <div class="nav-links">
+  <div style="display: flex; align-items: center; gap: 10px;">
+    <button class="hamburger-btn" id="hamburger" aria-label="Open menu" onclick="openMobileNav()" style="display: none; flex-direction: column; justify-content: space-between; width: 36px; height: 28px; background: transparent; border: none; cursor: pointer; z-index: 1100;">
+      <span style="display: block; height: 3px; background: white; border-radius: 3px; width: 100%;"></span>
+      <span style="display: block; height: 3px; background: white; border-radius: 3px; width: 100%;"></span>
+      <span style="display: block; height: 3px; background: white; border-radius: 3px; width: 100%;"></span>
+    </button>
+    <div style="font-weight: bold; font-size: 18px; color: white;">SeaSense</div>
+  </div>
+
+  <div class="nav-links" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
     <a onclick="showPage('home')">Home</a>
     <a onclick="showPage('climate')">Climate</a>
     <a onclick="showPage('fishing')">Fishing</a>
@@ -729,8 +741,29 @@ section h1 {
     <a onclick="showPage('contact')">Contact</a>
     <a onclick="showPage('login')">Login</a>
   </div>
-  <button id="theme-toggle" onclick="toggleTheme()">🌙 Dark</button>
+
+  <div>
+    <button id="theme-toggle" onclick="toggleTheme()">🌙 Dark</button>
+  </div>
 </nav>
+
+<!-- Mobile overlay navigation -->
+<div id="mobileNavOverlay" style="position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 2000; display: none; justify-content: center; align-items: center;" aria-hidden="true" onclick="if(event.target===this) closeMobileNav()">
+  <div style="width: 90%; max-width: 360px; background: white; color: black; border-radius: 10px; padding: 18px; box-shadow: 0 8px 30px rgba(0,0,0,0.4); max-height: 90vh; overflow-y: auto;">
+    <button style="float: right; background: none; border: none; font-size: 26px; cursor: pointer; color: black;" aria-label="Close menu" onclick="closeMobileNav()">&times;</button>
+    <a onclick="showPage('home')" style="display: block; padding: 12px 8px; border-radius: 8px; color: black; text-decoration: none; font-size: 16px; margin-top: 8px; cursor: pointer;">Home</a>
+    <a onclick="showPage('climate')" style="display: block; padding: 12px 8px; border-radius: 8px; color: black; text-decoration: none; font-size: 16px; cursor: pointer;">Climate</a>
+    <a onclick="showPage('fishing')" style="display: block; padding: 12px 8px; border-radius: 8px; color: black; text-decoration: none; font-size: 16px; cursor: pointer;">Fishing</a>
+    <a onclick="showPage('foods')" style="display: block; padding: 12px 8px; border-radius: 8px; color: black; text-decoration: none; font-size: 16px; cursor: pointer;">Foods</a>
+    <a onclick="showPage('biodiversity')" style="display: block; padding: 12px 8px; border-radius: 8px; color: black; text-decoration: none; font-size: 16px; cursor: pointer;">Biodiversity</a>
+    <a onclick="showPage('currents')" style="display: block; padding: 12px 8px; border-radius: 8px; color: black; text-decoration: none; font-size: 16px; cursor: pointer;">Ocean Currents</a>
+    <a onclick="showPage('coral')" style="display: block; padding: 12px 8px; border-radius: 8px; color: black; text-decoration: none; font-size: 16px; cursor: pointer;">Coral Reefs</a>
+    <a onclick="showPage('pollution')" style="display: block; padding: 12px 8px; border-radius: 8px; color: black; text-decoration: none; font-size: 16px; cursor: pointer;">Pollution</a>
+    <a onclick="showPage('quiz')" style="display: block; padding: 12px 8px; border-radius: 8px; color: black; text-decoration: none; font-size: 16px; cursor: pointer;">Quiz</a>
+    <a onclick="showPage('contact')" style="display: block; padding: 12px 8px; border-radius: 8px; color: black; text-decoration: none; font-size: 16px; cursor: pointer;">Contact</a>
+    <a onclick="showPage('login')" style="display: block; padding: 12px 8px; border-radius: 8px; color: black; text-decoration: none; font-size: 16px; cursor: pointer;">Login</a>
+  </div>
+</div>
 
 <!-- ----------------- Pages ------------------ -->
 
@@ -2189,6 +2222,27 @@ function showPage(pageId) {
     sec.classList.remove("active")
   );
   document.getElementById(pageId).classList.add("active");
+  // close mobile nav overlay on page change
+  try { closeMobileNav(); } catch (e) {}
+}
+
+/* Mobile navigation controls */
+function openMobileNav() {
+  const overlay = document.getElementById('mobileNavOverlay');
+  if (overlay) {
+    overlay.style.display = 'flex';
+    overlay.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  }
+}
+
+function closeMobileNav() {
+  const overlay = document.getElementById('mobileNavOverlay');
+  if (overlay) {
+    overlay.style.display = 'none';
+    overlay.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
 }
 
 /* ----------------- Quiz Data (multiple-choice) ------------------ */
